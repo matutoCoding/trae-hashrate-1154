@@ -1,0 +1,330 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  padding: $spacing-lg $page-padding 40rpx $page-padding;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #E8F8E0 0%, $color-bg-page 30%);
+}
+
+.allowanceCard {
+  background: linear-gradient(135deg, $color-subsidy 0%, #73D13D 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-lg;
+  box-shadow: 0 8rpx 32rpx rgba(82, 196, 26, 0.25);
+  color: $color-text-white;
+  position: relative;
+  overflow: hidden;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-lg;
+}
+
+.userName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.monthLabel {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.balanceSection {
+  margin-bottom: $spacing-lg;
+}
+
+.balanceLabel {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: $spacing-xs;
+}
+
+.balanceValue {
+  font-size: 80rpx;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+  color: $color-text-white;
+  text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.balanceUnit {
+  font-size: $font-size-md;
+  font-weight: $font-weight-normal;
+  margin-left: 8rpx;
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $spacing-md;
+  margin-bottom: $spacing-sm;
+}
+
+.progressText {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.progressBar {
+  width: 100%;
+  height: 16rpx;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: $color-text-white;
+  border-radius: 8rpx;
+  transition: width $transition-base;
+}
+
+.warnFill {
+  background: $color-warning;
+}
+
+.dangerFill {
+  background: $color-error;
+}
+
+.statsRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.actionRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.actionBtn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  background: $color-bg-card;
+  color: $color-primary;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.96);
+  }
+}
+
+.dangerBtn {
+  background: rgba(245, 63, 63, 0.08);
+  color: $color-error;
+}
+
+.successBtn {
+  background: rgba(82, 196, 26, 0.1);
+  color: $color-subsidy;
+}
+
+.selfpayToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
+  margin-bottom: $spacing-lg;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.toggleLabel {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.toggleDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.switch {
+  width: 100rpx;
+  height: 56rpx;
+  border-radius: 28rpx;
+  background: $color-border;
+  position: relative;
+  transition: all $transition-base;
+  flex-shrink: 0;
+}
+
+.switchActive {
+  background: $color-primary;
+}
+
+.switchDot {
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: $color-text-white;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+  transition: all $transition-base;
+}
+
+.switchActive .switchDot {
+  left: 48rpx;
+}
+
+.tipCard {
+  background: rgba(255, 184, 0, 0.1);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-lg;
+  display: flex;
+  gap: $spacing-sm;
+  align-items: flex-start;
+}
+
+.tipIcon {
+  font-size: $font-size-lg;
+  flex-shrink: 0;
+}
+
+.tipText {
+  font-size: $font-size-sm;
+  color: #874D00;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.sectionTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: $spacing-md 0;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.recordList {
+  //
+}
+
+.recordItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
+  margin-bottom: $spacing-sm;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.recordLeft {
+  flex: 1;
+  min-width: 0;
+}
+
+.recordType {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  margin-bottom: 6rpx;
+}
+
+.typeTag {
+  padding: 2rpx 12rpx;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.typeGrant {
+  background: rgba(82, 196, 26, 0.12);
+  color: $color-subsidy;
+}
+
+.typeConsume {
+  background: rgba(22, 93, 255, 0.1);
+  color: $color-info;
+}
+
+.typeReset {
+  background: rgba(255, 125, 0, 0.12);
+  color: $color-warning;
+}
+
+.recordDesc {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+  @include text-ellipsis;
+}
+
+.recordTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.recordRight {
+  text-align: right;
+  flex-shrink: 0;
+  margin-left: $spacing-sm;
+}
+
+.recordAmount {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  line-height: 1.3;
+}
+
+.amountMinus {
+  color: $color-text-primary;
+}
+
+.amountPlus {
+  color: $color-subsidy;
+}
+
+.recordBalance {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl * 2;
+}
+
+.emptyIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}

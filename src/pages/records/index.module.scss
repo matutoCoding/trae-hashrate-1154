@@ -1,0 +1,209 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  padding: 0 0 40rpx 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: $color-bg-page;
+}
+
+.headerSection {
+  padding: $spacing-lg $page-padding;
+  background: linear-gradient(180deg, #FFF0E5 0%, $color-bg-page 100%);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.statItem {
+  // handled by grid
+}
+
+.summaryCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: 0 2rpx 12rpx rgba(255, 107, 53, 0.08);
+  margin-bottom: $spacing-md;
+}
+
+.summaryTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+}
+
+.summaryLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.summaryValue {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.subsidyValue {
+  color: $color-subsidy;
+}
+
+.selfpayValue {
+  color: $color-selfpay;
+}
+
+.tabs {
+  display: flex;
+  background: $color-bg-card;
+  padding: $spacing-sm $page-padding;
+  gap: $spacing-md;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.tab {
+  @include flex-center;
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+}
+
+.tabActive {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.tabInactive {
+  background: $color-bg-hover;
+  color: $color-text-secondary;
+}
+
+.content {
+  padding: $spacing-lg $page-padding;
+}
+
+.sectionTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.countBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40rpx;
+  height: 40rpx;
+  padding: 0 12rpx;
+  border-radius: 20rpx;
+  background: rgba(255, 107, 53, 0.1);
+  color: $color-primary;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+}
+
+.stallCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: 0 2rpx 12rpx rgba(255, 107, 53, 0.08);
+}
+
+.stallHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.stallName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.stallPeriod {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  background: $color-bg-hover;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+}
+
+.stallStats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-sm $spacing-lg;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.stallStatItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.stallStatLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: 4rpx;
+}
+
+.stallStatValue {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.green {
+  color: $color-subsidy;
+}
+
+.orange {
+  color: $color-selfpay;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl * 2;
+}
+
+.emptyIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}

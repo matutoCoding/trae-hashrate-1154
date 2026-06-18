@@ -1,0 +1,29 @@
+@use '@/styles/variables.scss' as *;
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.normal {
+  background: rgba(22, 93, 255, 0.1);
+  color: $color-info;
+}
+
+.urgent {
+  background: rgba(255, 125, 0, 0.12);
+  color: $color-warning;
+}
+
+.vip {
+  background: linear-gradient(135deg, #FFE58F 0%, #FFB800 100%);
+  color: #874D00;
+  font-weight: $font-weight-semibold;
+}

@@ -1,0 +1,129 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: 0 2rpx 12rpx rgba(255, 107, 53, 0.08);
+  position: relative;
+  overflow: hidden;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.99);
+    transition: all $transition-fast;
+  }
+}
+
+.vipBorder {
+  border-left: 6rpx solid $color-vip;
+}
+
+.urgentBorder {
+  border-left: 6rpx solid $color-warning;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.numberSection {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.orderNumber {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.position {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.cutLineTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  background: rgba(245, 63, 63, 0.1);
+  color: $color-error;
+}
+
+.body {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $spacing-md;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.stallName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 8rpx;
+}
+
+.customer {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: 8rpx;
+}
+
+.items {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+}
+
+.rightSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $spacing-xs;
+}
+
+.statusTag {
+  padding: 6rpx 16rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.statusReady {
+  background: rgba(0, 180, 42, 0.12);
+  color: $color-success;
+}
+
+.statusPreparing {
+  background: rgba(22, 93, 255, 0.1);
+  color: $color-info;
+}
+
+.statusWaiting {
+  background: rgba(134, 144, 156, 0.15);
+  color: $color-text-secondary;
+}
+
+.estimated {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.estimatedTime {
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+}

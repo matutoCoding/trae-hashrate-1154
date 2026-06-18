@@ -1,0 +1,139 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  padding: $spacing-lg $page-padding 160rpx $page-padding;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #FFF0E5 0%, $color-bg-page 30%);
+}
+
+.currentCalling {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-lg;
+  box-shadow: 0 8rpx 32rpx rgba(255, 107, 53, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.callingLabel {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: $spacing-sm;
+}
+
+.callingNumber {
+  font-size: 100rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  line-height: 1;
+  letter-spacing: 4rpx;
+  text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+}
+
+.callingRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: $spacing-md;
+}
+
+.callingInfo {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.callButton {
+  @include button-reset;
+  background: $color-text-white;
+  color: $color-primary;
+  padding: 0 $spacing-xl;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.96);
+  }
+}
+
+.statsScroll {
+  margin-bottom: $spacing-lg;
+}
+
+.statsContainer {
+  display: flex;
+  gap: $spacing-md;
+  padding-right: $page-padding;
+  @include scroll-x-container;
+}
+
+.statItem {
+  @include scroll-x-item(200rpx);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: $spacing-md 0;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sectionCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.queueList {
+  // queue list
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl * 2;
+}
+
+.emptyIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.takeNumberButton {
+  @include button-reset;
+  position: fixed;
+  left: $page-padding;
+  right: $page-padding;
+  bottom: calc(100rpx + env(safe-area-inset-bottom));
+  height: $button-height-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  border-radius: $radius-button;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.35);
+  z-index: 100;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}

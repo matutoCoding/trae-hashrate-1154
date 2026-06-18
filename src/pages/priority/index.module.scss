@@ -1,0 +1,199 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  padding: 0 0 160rpx 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: $color-bg-page;
+}
+
+.tabs {
+  display: flex;
+  background: $color-bg-card;
+  padding: $spacing-sm $page-padding;
+  gap: $spacing-md;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.tab {
+  @include flex-center;
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+}
+
+.tabActive {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.tabInactive {
+  background: $color-bg-hover;
+  color: $color-text-secondary;
+}
+
+.content {
+  padding: $spacing-lg $page-padding;
+}
+
+.actionRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.actionBtn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.96);
+  }
+}
+
+.vipBtn {
+  background: linear-gradient(135deg, #FFE58F 0%, #FFB800 100%);
+  color: #874D00;
+}
+
+.urgentBtn {
+  background: linear-gradient(135deg, #FF9A45 0%, #FF7D00 100%);
+  color: $color-text-white;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin: $spacing-md 0;
+}
+
+.sectionTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: $spacing-md 0;
+}
+
+.countBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40rpx;
+  height: 40rpx;
+  padding: 0 12rpx;
+  border-radius: 20rpx;
+  background: rgba(255, 107, 53, 0.1);
+  color: $color-primary;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+}
+
+.cutCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: 0 2rpx 12rpx rgba(255, 107, 53, 0.08);
+  border-left: 6rpx solid $color-error;
+}
+
+.cutHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+}
+
+.cutNumber {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.cutTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.cutReason {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+  line-height: 1.5;
+}
+
+.cutMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.metaItem {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.metaHighlight {
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.affectedSection {
+  margin-top: $spacing-sm;
+}
+
+.affectedLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-xs;
+}
+
+.affectedOrders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.affectedTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  background: rgba(245, 63, 63, 0.08);
+  color: $color-error;
+  font-size: $font-size-xs;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl * 3;
+}
+
+.emptyIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
