@@ -84,6 +84,14 @@ export const queueService = {
     useQueueStore.getState().updateOrderStatus(orderId, status);
   },
 
+  advanceStatus: (orderId: string): QueueOrder | null => {
+    return useQueueStore.getState().advanceOrderStatus(orderId);
+  },
+
+  completeAndConsume: (orderId: string) => {
+    return useQueueStore.getState().completeAndConsume(orderId);
+  },
+
   getCutLineRecords: (): CutLineRecord[] => {
     return useQueueStore.getState().cutLineRecords;
   },
@@ -102,6 +110,17 @@ export const queueService = {
       waiting: '等待中',
       preparing: '制作中',
       ready: '待取餐',
+      completed: '已完成',
+      cancelled: '已取消'
+    };
+    return map[status];
+  },
+
+  getNextStatusLabel: (status: QueueOrder['status']): string => {
+    const map: Record<QueueOrder['status'], string> = {
+      waiting: '开始制作',
+      preparing: '制作完成',
+      ready: '确认取餐',
       completed: '已完成',
       cancelled: '已取消'
     };

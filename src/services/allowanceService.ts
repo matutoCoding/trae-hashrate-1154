@@ -14,6 +14,24 @@ export const allowanceService = {
     return useAllowanceStore.getState().getRecordsByMonth(month);
   },
 
+  getMonthSummary: (month: string) => {
+    return useAllowanceStore.getState().getMonthSummary(month);
+  },
+
+  getCurrentMonth: (): string => {
+    return new Date().toISOString().slice(0, 7);
+  },
+
+  getLastMonth: (): string => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 7);
+  },
+
+  formatMonthLabel: (month: string): string => {
+    const [y, m] = month.split('-');
+    return `${y}年${parseInt(m, 10)}月`;
+  },
+
   consume: (amount: number, orderId: string, description: string) => {
     return useAllowanceStore.getState().consume(amount, orderId, description);
   },

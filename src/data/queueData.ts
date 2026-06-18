@@ -67,21 +67,28 @@ export const mockCutLineRecords: CutLineRecord[] = [
     id: 'c001', orderId: 'q002', orderNumber: 'A002',
     reason: 'VIP会员优先', priority: 'vip',
     originalPosition: 5, newPosition: 1, operator: '系统',
-    timestamp: Date.now() - 280000, affectedOrders: ['q003', 'q004', 'q005', 'q006', 'q007', 'q008']
+    timestamp: Date.now() - 280000,
+    affectedOrders: ['A003', 'A004', 'A005', 'A006', 'A007', 'A008'],
+    normalAffectedOrders: ['A004', 'A005', 'A007', 'A008']
   },
   {
     id: 'c002', orderId: 'q003', orderNumber: 'A003',
     reason: '会议加急，30分钟内需用餐', priority: 'urgent',
     originalPosition: 6, newPosition: 2, operator: '李经理',
-    timestamp: Date.now() - 170000, affectedOrders: ['q004', 'q005', 'q006', 'q007', 'q008']
+    timestamp: Date.now() - 170000,
+    affectedOrders: ['A004', 'A005', 'A006', 'A007', 'A008'],
+    normalAffectedOrders: ['A004', 'A005', 'A007', 'A008']
   }
 ];
 
 export const mockQueueStats: QueueStats = {
-  totalWaiting: 7,
-  vipWaiting: 2,
-  urgentWaiting: 1,
-  normalWaiting: 4,
+  totalActive: 8,
+  readyCount: 1,
+  preparingCount: 1,
+  waitingCount: 6,
+  vipCount: 2,
+  urgentCount: 1,
+  normalCount: 5,
   todayCompleted: 86,
   avgWaitTime: 12
 };

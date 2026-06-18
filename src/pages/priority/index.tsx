@@ -19,6 +19,7 @@ const PriorityPage: React.FC = () => {
   const insertPriorityOrder = useQueueStore(s => s.insertPriorityOrder);
   const getSortedOrders = useQueueStore(s => s.getSortedOrders);
   const refreshStats = useQueueStore(s => s.refreshStats);
+  const advanceOrderStatus = useQueueStore(s => s.advanceOrderStatus);
 
   useEffect(() => {
     refreshStats();
@@ -75,24 +76,58 @@ const PriorityPage: React.FC = () => {
             finalReason,
             priority === 'vip' ? 'VIP系统' : '管理员'
           );
+          const affectedText = result.cutRecord.normalAffectedOrders.length > 0
+            ? `，影响 ${result.cutRecord.normalAffectedOrders.length} 个普通单`
+            : '';
           Taro.showToast({
-            title: `${label}单 ${result.order.orderNumber} 已排第${result.cutRecord.newPosition}位`,
-            icon: 'success'
+            title: `${label}单 ${result.order.orderNumber} 排第${result.cutRecord.newPosition}位${affectedText}`,
+            icon: 'success',
+            duration: 2500
           });
-          console.log('[PriorityPage] insert:', result.order.orderNumber, '原位置:', result.cutRecord.originalPosition, '→ 新位置:', result.cutRecord.newPosition);
+          console.log('[PriorityPage] insert:', result.order.orderNumber,
+            '原位置:', result.cutRecord.originalPosition,
+            '→ 新位置:', result.cutRecord.newPosition,
+            '普通单顺延:', result.cutRecord.normalAffectedOrders.join('、'));
+        }
+      }
+    });
+  };
+
+  const handlePriorityOrderClick = (order) => {
+    const nextLabel = queueService.getNextStatusLabel(order.status);
+    Taro.showModal({
+      title: `${order.orderNumber} - ${queueService.getPriorityLabel(order.priority)}`,
+      content: `顾客：${order.customerName}\n档口：${order.stallName}\n菜品：${order.items.join('、')}\n当前状态：${queueService.getStatusLabel(order.status)}\n\n点击确认将：${nextLabel}`,
+      confirmText: nextLabel,
+      cancelText: '关闭',
+      success: (res) => {
+        if (res.confirm) {
+          const result = advanceOrderStatus(order.id);
+          if (result) {
+            Taro.showToast({
+              title: `${order.orderNumber} → ${queueService.getStatusLabel(result.status)}`,
+              icon: 'success'
+            });
+          }
         }
       }
     });
   };
 
   const handleRecordClick = (record) => {
-    const affectedText = record.affectedOrders.length > 0
-      ? `\n受影响订单：${record.affectedOrders.join('、')}`
+    const priorityLabel = queueService.getPriorityLabel(record.priority);
+    const normalText = record.normalAffectedOrders.length > 0
+      ? `\n\n【被顺延的普通单】(${record.normalAffectedOrders.length}个)\n${record.normalAffectedOrders.join('  ')}`
+      : '\n\n无普通单被顺延';
+    const otherCount = record.affectedOrders.length - record.normalAffectedOrders.length;
+    const otherText = otherCount > 0
+      ? `\n（另有 ${otherCount} 个优先单位置不受影响）`
       : '';
     Taro.showModal({
-      title: `${record.orderNumber} 插队详情`,
-      content: `原因：${record.reason}\n原位置：第${record.originalPosition}位 → 第${record.newPosition}位\n操作人：${record.operator}${affectedText}`,
-      showCancel: false
+      title: `${record.orderNumber} ${priorityLabel}插队详情`,
+      content: `原因：${record.reason}\n原位置：第${record.originalPosition}位\n新位置：第${record.newPosition}位\n操作人：${record.operator}\n时间：${dayjs(record.timestamp).format('MM-DD HH:mm')}${normalText}${otherText}`,
+      showCancel: false,
+      confirmText: '知道了'
     });
   };
 
@@ -141,7 +176,7 @@ const PriorityPage: React.FC = () => {
                 <QueueCard
                   key={order.id}
                   order={order}
-                  onClick={() => console.log('click', order.id)}
+                  onClick={() => handlePriorityOrderClick(order)}
                 />
               ))
             ) : (
@@ -183,16 +218,18 @@ const PriorityPage: React.FC = () => {
                     </Text>
                     <Text className={styles.metaItem}>操作人：{record.operator}</Text>
                   </View>
-                  {record.affectedOrders.length > 0 && (
+                  {record.normalAffectedOrders.length > 0 && (
                     <View className={styles.affectedSection}>
-                      <Text className={styles.affectedLabel}>受影响订单（{record.affectedOrders.length}个）：</Text>
+                      <Text className={styles.affectedLabel}>
+                        被顺延普通单（{record.normalAffectedOrders.length}个）：
+                      </Text>
                       <View className={styles.affectedOrders}>
-                        {record.affectedOrders.slice(0, 5).map(num => (
+                        {record.normalAffectedOrders.slice(0, 6).map(num => (
                           <Text key={num} className={styles.affectedTag}>{num}</Text>
                         ))}
-                        {record.affectedOrders.length > 5 && (
+                        {record.normalAffectedOrders.length > 6 && (
                           <Text className={styles.affectedTag}>
-                            +{record.affectedOrders.length - 5}个
+                            +{record.normalAffectedOrders.length - 6}个
                           </Text>
                         )}
                       </View>

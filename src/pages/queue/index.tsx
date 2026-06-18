@@ -6,6 +6,7 @@ import QueueCard from '@/components/QueueCard';
 import StatCard from '@/components/StatCard';
 import { useQueueStore } from '@/store/queueStore';
 import { queueService } from '@/services/queueService';
+import type { QueueOrder } from '@/types';
 
 const QueuePage: React.FC = () => {
   const callingNumber = useQueueStore(s => s.callingNumber);
@@ -14,6 +15,7 @@ const QueuePage: React.FC = () => {
   const callNextNumber = useQueueStore(s => s.callNextNumber);
   const refreshStats = useQueueStore(s => s.refreshStats);
   const getSortedOrders = useQueueStore(s => s.getSortedOrders);
+  const advanceOrderStatus = useQueueStore(s => s.advanceOrderStatus);
 
   useEffect(() => {
     refreshStats();
@@ -51,11 +53,33 @@ const QueuePage: React.FC = () => {
     Taro.navigateTo({ url: '/pages/take-number/index' });
   };
 
-  const handleOrderClick = (order) => {
+  const handleOrderClick = (order: QueueOrder) => {
+    const nextLabel = queueService.getNextStatusLabel(order.status);
+    const priceText = order.totalAmount ? `\n金额：¥${order.totalAmount.toFixed(2)}` : '';
     Taro.showModal({
       title: `${order.orderNumber} - ${order.stallName}`,
-      content: `顾客：${order.customerName}\n菜品：${order.items.join('、')}\n状态：${queueService.getStatusLabel(order.status)}`,
-      showCancel: false
+      content: `顾客：${order.customerName}\n菜品：${order.items.join('、')}\n当前状态：${queueService.getStatusLabel(order.status)}${priceText}\n\n点击确认将：${nextLabel}`,
+      confirmText: nextLabel,
+      cancelText: '关闭',
+      success: (res) => {
+        if (res.confirm && order.status !== 'completed' && order.status !== 'cancelled') {
+          const result = advanceOrderStatus(order.id);
+          if (result) {
+            if (result.status === 'completed') {
+              const total = (order.totalAmount || 0).toFixed(2);
+              Taro.showToast({
+                title: `${order.orderNumber} 已取餐 ¥${total}`,
+                icon: 'success'
+              });
+            } else {
+              Taro.showToast({
+                title: `${order.orderNumber} → ${queueService.getStatusLabel(result.status)}`,
+                icon: 'success'
+              });
+            }
+          }
+        }
+      }
     });
   };
 
@@ -80,19 +104,28 @@ const QueuePage: React.FC = () => {
       >
         <View className={styles.statsContainer}>
           <View className={styles.statItem}>
-            <StatCard label="等待中" value={stats.totalWaiting} color="#FF6B35" />
+            <StatCard label="队列总数" value={stats.totalActive} color="#FF6B35" />
           </View>
           <View className={styles.statItem}>
-            <StatCard label="VIP" value={stats.vipWaiting} color="#FFB800" />
+            <StatCard label="待取餐" value={stats.readyCount} color="#00B42A" />
           </View>
           <View className={styles.statItem}>
-            <StatCard label="加急" value={stats.urgentWaiting} color="#FF7D00" />
+            <StatCard label="制作中" value={stats.preparingCount} color="#FF7D00" />
           </View>
           <View className={styles.statItem}>
-            <StatCard label="普通" value={stats.normalWaiting} color="#165DFF" />
+            <StatCard label="等待中" value={stats.waitingCount} color="#165DFF" />
           </View>
           <View className={styles.statItem}>
-            <StatCard label="均等待" value={stats.avgWaitTime} suffix="分钟" color="#00B42A" />
+            <StatCard label="VIP" value={stats.vipCount} color="#FFB800" />
+          </View>
+          <View className={styles.statItem}>
+            <StatCard label="加急" value={stats.urgentCount} color="#FF4D4F" />
+          </View>
+          <View className={styles.statItem}>
+            <StatCard label="普通" value={stats.normalCount} color="#86909C" />
+          </View>
+          <View className={styles.statItem}>
+            <StatCard label="均等待" value={stats.avgWaitTime} suffix="分钟" color="#722ED1" />
           </View>
         </View>
       </ScrollView>

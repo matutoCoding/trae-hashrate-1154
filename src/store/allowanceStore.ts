@@ -17,6 +17,14 @@ interface AllowanceStore {
   grant: (amount: number, description: string) => void;
   toggleSelfPayMode: () => void;
   getRecordsByMonth: (month: string) => AllowanceRecord[];
+  getMonthSummary: (month: string) => {
+    month: string;
+    totalGrant: number;
+    totalConsume: number;
+    totalReset: number;
+    remaining: number;
+    recordCount: number;
+  };
 }
 
 const getCurrentMonth = (): string => {
@@ -206,5 +214,22 @@ export const useAllowanceStore = create<AllowanceStore>((set, get) => ({
     }));
   },
 
-  getRecordsByMonth: (month) => get().records.filter(r => r.month === month)
+  getRecordsByMonth: (month) => get().records.filter(r => r.month === month),
+
+  getMonthSummary: (month) => {
+    const monthRecords = get().records.filter(r => r.month === month);
+    const totalGrant = monthRecords.filter(r => r.type === 'grant').reduce((s, r) => s + r.amount, 0);
+    const totalConsume = monthRecords.filter(r => r.type === 'consume').reduce((s, r) => s + r.amount, 0);
+    const totalReset = monthRecords.filter(r => r.type === 'reset').reduce((s, r) => s + r.amount, 0);
+    const sorted = [...monthRecords].sort((a, b) => b.timestamp - a.timestamp);
+    const remaining = sorted.length > 0 ? sorted[0].balanceAfter : 0;
+    return {
+      month,
+      totalGrant,
+      totalConsume,
+      totalReset,
+      remaining,
+      recordCount: monthRecords.length
+    };
+  }
 }));

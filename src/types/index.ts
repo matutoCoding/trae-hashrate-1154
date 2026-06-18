@@ -31,6 +31,7 @@ export interface CutLineRecord {
   operator: string;
   timestamp: number;
   affectedOrders: string[];
+  normalAffectedOrders: string[];
 }
 
 // 排队订单
@@ -41,6 +42,8 @@ export interface QueueOrder {
   stallName: string;
   customerName: string;
   items: string[];
+  itemPrices?: { name: string; price: number; quantity: number }[];
+  totalAmount?: number;
   priority: OrderPriority;
   status: OrderStatus;
   queuePosition: number;
@@ -113,10 +116,13 @@ export interface StallSettlement {
 
 // 队列统计
 export interface QueueStats {
-  totalWaiting: number;
-  vipWaiting: number;
-  urgentWaiting: number;
-  normalWaiting: number;
+  totalActive: number;
+  readyCount: number;
+  preparingCount: number;
+  waitingCount: number;
+  vipCount: number;
+  urgentCount: number;
+  normalCount: number;
   todayCompleted: number;
   avgWaitTime: number;
 }

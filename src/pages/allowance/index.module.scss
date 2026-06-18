@@ -7,6 +7,44 @@
   background: linear-gradient(180deg, #E8F8E0 0%, $color-bg-page 30%);
 }
 
+.monthTabs {
+  display: flex;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 6rpx;
+  margin-bottom: $spacing-lg;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.monthTab {
+  flex: 1;
+  text-align: center;
+  padding: $spacing-sm 0;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+}
+
+.monthTabActive {
+  background: $color-subsidy;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+  box-shadow: 0 4rpx 12rpx rgba(82, 196, 26, 0.25);
+}
+
+.historyCard {
+  background: linear-gradient(135deg, #86909C 0%, #4E5969 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-lg;
+  box-shadow: 0 8rpx 32rpx rgba(78, 89, 105, 0.2);
+  color: $color-text-white;
+  position: relative;
+  overflow: hidden;
+}
+
 .allowanceCard {
   background: linear-gradient(135deg, $color-subsidy 0%, #73D13D 100%);
   border-radius: $radius-xl;

@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { View, Text, Button } from '@tarojs/components';
 import Taro, { usePullDownRefresh, useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
@@ -11,10 +11,16 @@ import dayjs from 'dayjs';
 const AllowancePage: React.FC = () => {
   const allowance = useAllowanceStore(s => s.allowance);
   const records = useAllowanceStore(s => s.records);
+  const getRecordsByMonth = useAllowanceStore(s => s.getRecordsByMonth);
+  const getMonthSummary = useAllowanceStore(s => s.getMonthSummary);
   const toggleSelfPayMode = useAllowanceStore(s => s.toggleSelfPayMode);
   const resetMonthly = useAllowanceStore(s => s.resetMonthly);
   const grant = useAllowanceStore(s => s.grant);
   const checkAndResetMonthly = useAllowanceStore(s => s.checkAndResetMonthly);
+
+  const currentMonth = allowanceService.getCurrentMonth();
+  const lastMonth = allowanceService.getLastMonth();
+  const [viewMonth, setViewMonth] = useState<string>(currentMonth);
 
   useEffect(() => {
     const reset = checkAndResetMonthly();
@@ -27,6 +33,7 @@ const AllowancePage: React.FC = () => {
     const reset = checkAndResetMonthly();
     if (reset) {
       Taro.showToast({ title: '已自动切换到本月额度', icon: 'none', duration: 2000 });
+      setViewMonth(allowanceService.getCurrentMonth());
     }
   });
 
@@ -36,10 +43,26 @@ const AllowancePage: React.FC = () => {
     }, 500);
   });
 
+  const isCurrentMonth = viewMonth === currentMonth;
+
+  const monthRecords = useMemo(
+    () => getRecordsByMonth(viewMonth).sort((a, b) => b.timestamp - a.timestamp),
+    [viewMonth, records, getRecordsByMonth]
+  );
+
+  const monthSummary = useMemo(
+    () => getMonthSummary(viewMonth),
+    [viewMonth, records, getMonthSummary]
+  );
+
+  const usedForMonth = monthSummary.totalConsume;
+  const quotaForMonth = monthSummary.totalGrant || allowance.monthlyQuota;
+  const remainingForMonth = isCurrentMonth ? allowance.remainingAmount : monthSummary.remaining;
+
   const usagePercent = useMemo(() => {
-    if (allowance.monthlyQuota <= 0) return 0;
-    return Math.min(100, Math.round((allowance.usedAmount / allowance.monthlyQuota) * 100));
-  }, [allowance.usedAmount, allowance.monthlyQuota]);
+    if (quotaForMonth <= 0) return 0;
+    return Math.min(100, Math.round((usedForMonth / quotaForMonth) * 100));
+  }, [usedForMonth, quotaForMonth]);
 
   const progressClass = useMemo(() => {
     if (usagePercent >= 90) return styles.dangerFill;
@@ -49,7 +72,15 @@ const AllowancePage: React.FC = () => {
 
   const daysUntilReset = allowanceService.getDaysUntilReset();
 
+  const handleMonthChange = (month: string) => {
+    setViewMonth(month);
+  };
+
   const handleToggleSelfPay = () => {
+    if (!isCurrentMonth) {
+      Taro.showToast({ title: '请切换到本月进行操作', icon: 'none' });
+      return;
+    }
     const nextMode = !allowance.isSelfPayMode;
     Taro.showModal({
       title: nextMode ? '切换至自费模式' : '切换至餐补模式',
@@ -67,6 +98,10 @@ const AllowancePage: React.FC = () => {
   };
 
   const handleReset = () => {
+    if (!isCurrentMonth) {
+      Taro.showToast({ title: '请切换到本月进行操作', icon: 'none' });
+      return;
+    }
     Taro.showModal({
       title: '确认重置月度额度',
       content: '本月剩余额度将被清零，并发放新的月度额度。上月额度不累加。',
@@ -82,6 +117,10 @@ const AllowancePage: React.FC = () => {
   };
 
   const handleGrant = () => {
+    if (!isCurrentMonth) {
+      Taro.showToast({ title: '请切换到本月进行操作', icon: 'none' });
+      return;
+    }
     Taro.showModal({
       title: '发放临时额度',
       editable: true,
@@ -94,7 +133,7 @@ const AllowancePage: React.FC = () => {
             Taro.showToast({ title: '请输入有效金额', icon: 'none' });
             return;
           }
-          grant(amount, `临时额度发放 ¥${amount}`);
+          grant(amount, `${allowanceService.formatMonthLabel(viewMonth)} 临时额度发放 ¥${amount}`);
           Taro.showToast({ title: `已发放 ¥${amount}`, icon: 'success' });
           console.log('[AllowancePage] grant amount:', amount);
         }
@@ -111,29 +150,53 @@ const AllowancePage: React.FC = () => {
     return map[type] || map.consume;
   };
 
-  const monthRecords = records.filter(r => r.month === allowance.currentMonth);
+  const cardClass = isCurrentMonth ? styles.allowanceCard : styles.historyCard;
 
   return (
     <View className={styles.pageContainer}>
-      <View className={styles.allowanceCard}>
+      <View className={styles.monthTabs}>
+        <View
+          className={classnames(styles.monthTab, isCurrentMonth && styles.monthTabActive)}
+          onClick={() => handleMonthChange(currentMonth)}
+        >
+          本月 ({allowanceService.formatMonthLabel(currentMonth)})
+        </View>
+        <View
+          className={classnames(styles.monthTab, !isCurrentMonth && styles.monthTabActive)}
+          onClick={() => handleMonthChange(lastMonth)}
+        >
+          上月 ({allowanceService.formatMonthLabel(lastMonth)})
+        </View>
+      </View>
+
+      <View className={cardClass}>
         <View className={styles.userInfo}>
           <View>
             <Text className={styles.userName}>{allowance.userName}</Text>
-            <View className={styles.monthLabel}>{allowance.currentMonth} 月度餐补</View>
+            <View className={styles.monthLabel}>
+              {allowanceService.formatMonthLabel(viewMonth)} 餐补
+              {!isCurrentMonth && '（历史）'}
+            </View>
           </View>
-          <Text className={styles.monthLabel}>距重置还有 {daysUntilReset} 天</Text>
+          {isCurrentMonth ? (
+            <Text className={styles.monthLabel}>距重置还有 {daysUntilReset} 天</Text>
+          ) : (
+            <Text className={styles.monthLabel}>已结算</Text>
+          )}
         </View>
 
         <View className={styles.balanceSection}>
-          <Text className={styles.balanceLabel}>剩余可用额度</Text>
+          <Text className={styles.balanceLabel}>
+            {isCurrentMonth ? '剩余可用额度' : '月末剩余额度'}
+          </Text>
           <View>
-            <Text className={styles.balanceValue}>¥{allowance.remainingAmount.toFixed(2)}</Text>
+            <Text className={styles.balanceValue}>¥{remainingForMonth.toFixed(2)}</Text>
           </View>
         </View>
 
         <View className={styles.progressRow}>
           <Text className={styles.progressText}>
-            已使用 ¥{allowance.usedAmount.toFixed(2)} / ¥{allowance.monthlyQuota.toFixed(2)}
+            已使用 ¥{usedForMonth.toFixed(2)} / ¥{quotaForMonth.toFixed(2)}
           </Text>
           <Text className={styles.progressText}>{usagePercent}%</Text>
         </View>
@@ -146,11 +209,11 @@ const AllowancePage: React.FC = () => {
       </View>
 
       <View className={styles.statsRow}>
-        <StatCard label="本月已用" value={`¥${allowance.usedAmount.toFixed(2)}`} color="#4E5969" />
-        <StatCard label="月度额度" value={`¥${allowance.monthlyQuota.toFixed(2)}`} color="#52C41A" />
+        <StatCard label="已用额度" value={`¥${usedForMonth.toFixed(2)}`} color="#4E5969" />
+        <StatCard label="发放总额" value={`¥${quotaForMonth.toFixed(2)}`} color="#52C41A" />
       </View>
 
-      {allowance.remainingAmount <= 0 && !allowance.isSelfPayMode && (
+      {isCurrentMonth && allowance.remainingAmount <= 0 && !allowance.isSelfPayMode && (
         <View className={styles.tipCard}>
           <Text className={styles.tipIcon}>⚠️</Text>
           <Text className={styles.tipText}>
@@ -159,33 +222,39 @@ const AllowancePage: React.FC = () => {
         </View>
       )}
 
-      <View className={styles.selfpayToggle}>
-        <View>
-          <Text className={styles.toggleLabel}>自费模式</Text>
-          <View className={styles.toggleDesc}>
-            {allowance.isSelfPayMode ? '当前：所有消费均为自费' : '当前：优先使用餐补额度'}
+      {isCurrentMonth && (
+        <View className={styles.selfpayToggle}>
+          <View>
+            <Text className={styles.toggleLabel}>自费模式</Text>
+            <View className={styles.toggleDesc}>
+              {allowance.isSelfPayMode ? '当前：所有消费均为自费' : '当前：优先使用餐补额度'}
+            </View>
+          </View>
+          <View
+            className={classnames(styles.switch, allowance.isSelfPayMode && styles.switchActive)}
+            onClick={handleToggleSelfPay}
+          >
+            <View className={styles.switchDot} />
           </View>
         </View>
-        <View
-          className={classnames(styles.switch, allowance.isSelfPayMode && styles.switchActive)}
-          onClick={handleToggleSelfPay}
-        >
-          <View className={styles.switchDot} />
-        </View>
-      </View>
+      )}
 
-      <View className={styles.actionRow}>
-        <Button className={classnames(styles.actionBtn, styles.successBtn)} onClick={handleGrant}>
-          + 发放额度
-        </Button>
-        <Button className={classnames(styles.actionBtn, styles.dangerBtn)} onClick={handleReset}>
-          重置月度
-        </Button>
-      </View>
+      {isCurrentMonth && (
+        <View className={styles.actionRow}>
+          <Button className={classnames(styles.actionBtn, styles.successBtn)} onClick={handleGrant}>
+            + 发放额度
+          </Button>
+          <Button className={classnames(styles.actionBtn, styles.dangerBtn)} onClick={handleReset}>
+            重置月度
+          </Button>
+        </View>
+      )}
 
       <View className={styles.sectionTitleRow}>
-        <Text className={styles.sectionTitle}>额度明细</Text>
-        <Text className={styles.toggleDesc}>本月 {monthRecords.length} 条</Text>
+        <Text className={styles.sectionTitle}>
+          {allowanceService.formatMonthLabel(viewMonth)} 明细
+        </Text>
+        <Text className={styles.toggleDesc}>共 {monthRecords.length} 条</Text>
       </View>
 
       <View className={styles.recordList}>
