@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { View, Text, Button } from '@tarojs/components';
-import Taro, { usePullDownRefresh } from '@tarojs/taro';
+import Taro, { usePullDownRefresh, useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import StatCard from '@/components/StatCard';
@@ -14,6 +14,21 @@ const AllowancePage: React.FC = () => {
   const toggleSelfPayMode = useAllowanceStore(s => s.toggleSelfPayMode);
   const resetMonthly = useAllowanceStore(s => s.resetMonthly);
   const grant = useAllowanceStore(s => s.grant);
+  const checkAndResetMonthly = useAllowanceStore(s => s.checkAndResetMonthly);
+
+  useEffect(() => {
+    const reset = checkAndResetMonthly();
+    if (reset) {
+      Taro.showToast({ title: '已自动切换到本月额度', icon: 'none', duration: 2000 });
+    }
+  }, []);
+
+  useDidShow(() => {
+    const reset = checkAndResetMonthly();
+    if (reset) {
+      Taro.showToast({ title: '已自动切换到本月额度', icon: 'none', duration: 2000 });
+    }
+  });
 
   usePullDownRefresh(() => {
     setTimeout(() => {

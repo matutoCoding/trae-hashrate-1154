@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, Button, ScrollView } from '@tarojs/components';
-import Taro, { usePullDownRefresh } from '@tarojs/taro';
+import Taro, { usePullDownRefresh, useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import QueueCard from '@/components/QueueCard';
@@ -14,15 +14,28 @@ type TabType = 'queue' | 'records';
 
 const PriorityPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('queue');
-  const allOrders = useQueueStore(s => s.getSortedOrders());
+  const rawOrders = useQueueStore(s => s.orders);
   const cutRecords = useQueueStore(s => s.cutLineRecords);
   const insertPriorityOrder = useQueueStore(s => s.insertPriorityOrder);
+  const getSortedOrders = useQueueStore(s => s.getSortedOrders);
+  const refreshStats = useQueueStore(s => s.refreshStats);
+
+  useEffect(() => {
+    refreshStats();
+  }, [refreshStats]);
+
+  useDidShow(() => {
+    refreshStats();
+  });
 
   usePullDownRefresh(() => {
+    refreshStats();
     setTimeout(() => {
       Taro.stopPullDownRefresh();
     }, 500);
   });
+
+  const allOrders = useMemo(() => getSortedOrders(), [rawOrders, getSortedOrders]);
 
   const priorityOrders = useMemo(() => {
     return allOrders.filter(
@@ -63,10 +76,10 @@ const PriorityPage: React.FC = () => {
             priority === 'vip' ? 'VIP系统' : '管理员'
           );
           Taro.showToast({
-            title: `${label}单已插入，位置：${result.order.orderNumber}`,
+            title: `${label}单 ${result.order.orderNumber} 已排第${result.cutRecord.newPosition}位`,
             icon: 'success'
           });
-          console.log('[PriorityPage] insert:', result.order.orderNumber, 'at position', result.cutRecord.newPosition);
+          console.log('[PriorityPage] insert:', result.order.orderNumber, '原位置:', result.cutRecord.originalPosition, '→ 新位置:', result.cutRecord.newPosition);
         }
       }
     });

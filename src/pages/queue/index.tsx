@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { View, Text, ScrollView, Button } from '@tarojs/components';
-import Taro, { usePullDownRefresh } from '@tarojs/taro';
+import Taro, { usePullDownRefresh, useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import QueueCard from '@/components/QueueCard';
 import StatCard from '@/components/StatCard';
@@ -10,14 +10,27 @@ import { queueService } from '@/services/queueService';
 const QueuePage: React.FC = () => {
   const callingNumber = useQueueStore(s => s.callingNumber);
   const stats = useQueueStore(s => s.stats);
-  const orders = useQueueStore(s => s.getSortedOrders());
+  const rawOrders = useQueueStore(s => s.orders);
   const callNextNumber = useQueueStore(s => s.callNextNumber);
+  const refreshStats = useQueueStore(s => s.refreshStats);
+  const getSortedOrders = useQueueStore(s => s.getSortedOrders);
+
+  useEffect(() => {
+    refreshStats();
+  }, [refreshStats]);
+
+  useDidShow(() => {
+    refreshStats();
+  });
+
+  const orders = useMemo(() => getSortedOrders(), [rawOrders, getSortedOrders]);
 
   const activeOrders = useMemo(() => {
     return orders.filter(o => o.status === 'waiting' || o.status === 'preparing' || o.status === 'ready');
   }, [orders]);
 
   usePullDownRefresh(() => {
+    refreshStats();
     setTimeout(() => {
       Taro.stopPullDownRefresh();
       Taro.showToast({ title: '刷新成功', icon: 'success' });

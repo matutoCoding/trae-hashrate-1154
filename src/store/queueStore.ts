@@ -8,8 +8,8 @@ interface QueueStore {
   stats: QueueStats;
   callingNumber: string;
   getSortedOrders: () => QueueOrder[];
-  getOrdersByPriority: (priority: OrderPriority) => QueueOrder[];
-  getOrdersByStatus: (status: string) => QueueOrder[];
+  getActiveOrders: () => QueueOrder[];
+  refreshStats: () => void;
   callNextNumber: () => QueueOrder | null;
   addOrder: (order: Omit<QueueOrder, 'id' | 'orderNumber' | 'createdAt' | 'queuePosition'>) => QueueOrder;
   insertPriorityOrder: (
@@ -42,9 +42,32 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       });
   },
 
-  getOrdersByPriority: (priority) => get().orders.filter(o => o.priority === priority && (o.status === 'waiting' || o.status === 'preparing')),
+  getActiveOrders: () => {
+    return get().orders.filter(o => o.status === 'waiting' || o.status === 'preparing');
+  },
 
-  getOrdersByStatus: (status) => get().orders.filter(o => o.status === status),
+  refreshStats: () => {
+    const activeOrders = get().getActiveOrders();
+    const completedToday = get().orders.filter(o => {
+      if (o.status !== 'completed') return false;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return o.createdAt >= today.getTime();
+    }).length;
+
+    const stats: QueueStats = {
+      totalWaiting: activeOrders.length,
+      vipWaiting: activeOrders.filter(o => o.priority === 'vip').length,
+      urgentWaiting: activeOrders.filter(o => o.priority === 'urgent').length,
+      normalWaiting: activeOrders.filter(o => o.priority === 'normal').length,
+      todayCompleted: completedToday > 0 ? completedToday : get().stats.todayCompleted,
+      avgWaitTime: activeOrders.length > 0
+        ? Math.round(activeOrders.reduce((s, o) => s + (o.estimatedTime || 10), 0) / activeOrders.length)
+        : 0
+    };
+    set({ stats });
+    console.log('[QueueStore] refreshStats:', JSON.stringify(stats));
+  },
 
   callNextNumber: () => {
     const sorted = get().getSortedOrders();
@@ -69,11 +92,12 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       id: `q${Date.now()}`,
       orderNumber: `A${String(maxNum + 1).padStart(3, '0')}`,
       createdAt: Date.now(),
-      queuePosition: orders.length,
+      queuePosition: 0,
       cutLine: false
     };
     set(state => ({ orders: [...state.orders, newOrder] }));
     get().recalcPositions();
+    get().refreshStats();
     console.log('[QueueStore] addOrder:', newOrder.orderNumber);
     return newOrder;
   },
@@ -87,15 +111,14 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     const priorityWeight: Record<OrderPriority, number> = { vip: 0, urgent: 1, normal: 2 };
     const targetWeight = priorityWeight[orderData.priority];
 
-    let insertIndex = 0;
-    const sorted = [...orders].filter(o => o.status === 'waiting' || o.status === 'preparing');
+    const sorted = get().getSortedOrders();
+    let insertIndex = sorted.length;
     for (let i = 0; i < sorted.length; i++) {
       const w = priorityWeight[sorted[i].priority];
       if (w > targetWeight) {
         insertIndex = i;
         break;
       }
-      insertIndex = i + 1;
     }
 
     const newOrder: QueueOrder = {
@@ -107,8 +130,9 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       cutLine: true
     };
 
-    const originalPosition = sorted.length;
-    const affected = sorted.slice(insertIndex).map(o => o.orderNumber);
+    const affectedOrders = sorted.slice(insertIndex).map(o => o.orderNumber);
+    const originalPositionUser = sorted.length + 1;
+    const newPositionUser = insertIndex + 1;
 
     const cutRecord: CutLineRecord = {
       id: `c${Date.now()}`,
@@ -116,23 +140,24 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       orderNumber: newOrder.orderNumber,
       reason,
       priority: orderData.priority,
-      originalPosition,
-      newPosition: insertIndex,
+      originalPosition: originalPositionUser,
+      newPosition: newPositionUser,
       operator,
       timestamp: Date.now(),
-      affectedOrders: affected
+      affectedOrders
     };
     newOrder.cutLineRecordId = cutRecord.id;
 
-    const newOrders = [...orders];
-    newOrders.splice(insertIndex, 0, newOrder);
-
+    const newOrdersList = [...orders, newOrder];
     set(state => ({
-      orders: newOrders,
+      orders: newOrdersList,
       cutLineRecords: [cutRecord, ...state.cutLineRecords]
     }));
     get().recalcPositions();
-    console.log('[QueueStore] insertPriorityOrder:', newOrder.orderNumber, 'position:', insertIndex);
+    get().refreshStats();
+    console.log('[QueueStore] insertPriorityOrder:', newOrder.orderNumber,
+      '原位置:', originalPositionUser, '→ 新位置:', newPositionUser,
+      '受影响订单:', affectedOrders.length, '个');
     return { order: newOrder, cutRecord };
   },
 
@@ -140,11 +165,7 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     set(state => ({
       orders: state.orders.map(o => o.id === orderId ? { ...o, status } : o)
     }));
-    if (status === 'completed') {
-      set(state => ({
-        stats: { ...state.stats, todayCompleted: state.stats.todayCompleted + 1 }
-      }));
-    }
+    get().refreshStats();
   },
 
   recalcPositions: () => {

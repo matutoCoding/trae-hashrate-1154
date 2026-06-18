@@ -5,6 +5,7 @@ import { mockUserAllowance, mockAllowanceRecords } from '@/data/allowanceData';
 interface AllowanceStore {
   allowance: UserAllowance;
   records: AllowanceRecord[];
+  checkAndResetMonthly: () => boolean;
   consume: (amount: number, orderId: string, description: string) => {
     success: boolean;
     payType: PayType;
@@ -18,14 +19,30 @@ interface AllowanceStore {
   getRecordsByMonth: (month: string) => AllowanceRecord[];
 }
 
+const getCurrentMonth = (): string => {
+  return new Date().toISOString().slice(0, 7);
+};
+
 export const useAllowanceStore = create<AllowanceStore>((set, get) => ({
   allowance: { ...mockUserAllowance },
   records: [...mockAllowanceRecords],
 
+  checkAndResetMonthly: () => {
+    const systemMonth = getCurrentMonth();
+    const { allowance } = get();
+    if (allowance.currentMonth !== systemMonth) {
+      console.log('[AllowanceStore] 检测到月份变化:', allowance.currentMonth, '→', systemMonth, '自动重置');
+      get().resetMonthly();
+      return true;
+    }
+    return false;
+  },
+
   consume: (amount, orderId, description) => {
+    get().checkAndResetMonthly();
     const { allowance } = get();
     const now = Date.now();
-    const month = new Date().toISOString().slice(0, 7);
+    const month = getCurrentMonth();
 
     if (allowance.isSelfPayMode || allowance.remainingAmount <= 0) {
       const record: AllowanceRecord = {
@@ -68,7 +85,8 @@ export const useAllowanceStore = create<AllowanceStore>((set, get) => ({
         allowance: {
           ...state.allowance,
           usedAmount: state.allowance.usedAmount + amount,
-          remainingAmount: newBalance
+          remainingAmount: newBalance,
+          currentMonth: month
         },
         records: [record, ...state.records]
       }));
@@ -91,7 +109,7 @@ export const useAllowanceStore = create<AllowanceStore>((set, get) => ({
       amount,
       balanceAfter: 0,
       relatedOrderId: orderId,
-      description: `${description}（混合：餐补${subsidyUsed} + 自费${selfpayUsed}）`,
+      description: `${description}（混合：餐补¥${subsidyUsed.toFixed(2)} + 自费¥${selfpayUsed.toFixed(2)}）`,
       timestamp: now,
       month
     };
@@ -99,7 +117,8 @@ export const useAllowanceStore = create<AllowanceStore>((set, get) => ({
       allowance: {
         ...state.allowance,
         usedAmount: state.allowance.monthlyQuota,
-        remainingAmount: 0
+        remainingAmount: 0,
+        currentMonth: month
       },
       records: [record, ...state.records]
     }));
@@ -114,16 +133,16 @@ export const useAllowanceStore = create<AllowanceStore>((set, get) => ({
 
   resetMonthly: () => {
     const now = Date.now();
-    const month = new Date().toISOString().slice(0, 7);
+    const month = getCurrentMonth();
     const { allowance } = get();
-    const record: AllowanceRecord = {
+    const resetRecord: AllowanceRecord = {
       id: `a${Date.now()}`,
       userId: allowance.userId,
       userName: allowance.userName,
       type: 'reset',
       amount: 0,
       balanceAfter: allowance.monthlyQuota,
-      description: `${month}月度额度重置（上月剩余额度清零）`,
+      description: `${month}月度额度重置（上月剩余额度清零，不累加）`,
       timestamp: now,
       month
     };
@@ -147,14 +166,15 @@ export const useAllowanceStore = create<AllowanceStore>((set, get) => ({
         lastResetTime: now,
         isSelfPayMode: false
       },
-      records: [grantRecord, record, ...state.records]
+      records: [grantRecord, resetRecord, ...state.records]
     }));
-    console.log('[AllowanceStore] resetMonthly done');
+    console.log('[AllowanceStore] resetMonthly done, month:', month);
   },
 
   grant: (amount, description) => {
+    get().checkAndResetMonthly();
     const now = Date.now();
-    const month = new Date().toISOString().slice(0, 7);
+    const month = getCurrentMonth();
     const { allowance } = get();
     const newBalance = allowance.remainingAmount + amount;
     const record: AllowanceRecord = {
@@ -172,7 +192,8 @@ export const useAllowanceStore = create<AllowanceStore>((set, get) => ({
       allowance: {
         ...state.allowance,
         remainingAmount: newBalance,
-        monthlyQuota: state.allowance.monthlyQuota + amount
+        monthlyQuota: state.allowance.monthlyQuota + amount,
+        currentMonth: month
       },
       records: [record, ...state.records]
     }));

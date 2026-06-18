@@ -37,7 +37,11 @@ const QueueCard: React.FC<QueueCardProps> = ({ order, onClick }) => {
           {order.cutLine && <Text className={styles.cutLineTag}>已插队</Text>}
         </View>
         <Text className={styles.position}>
-          排队 {order.queuePosition > 0 ? `第${order.queuePosition}位` : '当前'}
+          {order.status === 'ready'
+            ? '待取餐'
+            : order.status === 'preparing'
+              ? '制作中'
+              : `第${order.queuePosition + 1}位`}
         </Text>
       </View>
 

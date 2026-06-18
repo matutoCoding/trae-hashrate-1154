@@ -1,16 +1,20 @@
 import React, { useEffect } from 'react';
 import { useDidShow, useDidHide } from '@tarojs/taro';
-// 全局样式
 import './app.scss';
+import { useAllowanceStore } from '@/store/allowanceStore';
+import { useQueueStore } from '@/store/queueStore';
 
 function App(props) {
-  // 可以使用所有的 React Hooks
-  useEffect(() => {});
+  useEffect(() => {
+    useAllowanceStore.getState().checkAndResetMonthly();
+    useQueueStore.getState().refreshStats();
+    console.log('[App] initialized, stats and allowance checked');
+  }, []);
 
-  // 对应 onShow
-  useDidShow(() => {});
+  useDidShow(() => {
+    useAllowanceStore.getState().checkAndResetMonthly();
+  });
 
-  // 对应 onHide
   useDidHide(() => {});
 
   return props.children;
