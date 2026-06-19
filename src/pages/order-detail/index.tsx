@@ -25,6 +25,12 @@ const OrderDetailPage: React.FC = () => {
     mixed: '混合支付'
   }[order.payType] || '未知';
 
+  const sourceLabel = {
+    queue: '取餐生成',
+    direct: '直接消费',
+    imported: '历史导入'
+  }[order.source] || '未知';
+
   return (
     <View className={styles.pageContainer}>
       <View className={styles.orderHeader}>
@@ -39,6 +45,12 @@ const OrderDetailPage: React.FC = () => {
       )}
 
       <View className={styles.infoCard}>
+        <View className={styles.infoRow}>
+          <Text className={styles.infoLabel}>订单来源</Text>
+          <Text className={classnames(styles.infoValue, order.source === 'queue' ? styles.sourceQueueValue : ''}>
+            {sourceLabel}
+          </Text>
+        </View>
         <View className={styles.infoRow}>
           <Text className={styles.infoLabel}>档口</Text>
           <Text className={styles.infoValue}>{order.stallName}</Text>

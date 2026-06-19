@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { usePullDownRefresh } from '@tarojs/taro';
 import classnames from 'classnames';
@@ -11,14 +11,36 @@ import dayjs from 'dayjs';
 type TabType = 'orders' | 'settlement';
 type StallFilter = 'all' | string;
 type PayFilter = 'all' | 'subsidy' | 'selfpay' | 'mixed';
+type SourceFilter = 'all' | 'queue' | 'direct' | 'imported';
+
+const sourceLabel: Record<SourceFilter, string> = {
+  all: '全部',
+  queue: '取餐生成',
+  direct: '直接消费',
+  imported: '历史导入'
+};
 
 const RecordsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('orders');
   const [stallFilter, setStallFilter] = useState<StallFilter>('all');
   const [payFilter, setPayFilter] = useState<PayFilter>('all');
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
+  const [settlementMonth, setSettlementMonth] = useState<string>(
+    new Date().toISOString().slice(0, 7)
+  );
 
   const rawOrders = useOrderStore(s => s.orders);
   const settlements = useOrderStore(s => s.settlements);
+  const refreshSettlements = useOrderStore(s => s.refreshSettlements);
+  const getOrdersByMonth = useOrderStore(s => s.getOrdersByMonth);
+
+  useEffect(() => {
+    refreshSettlements(settlementMonth);
+  }, [settlementMonth, refreshSettlements]);
+
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const lastMonth = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1)
+    .toISOString().slice(0, 7);
 
   const stallOptions = useMemo(() => {
     const stallIds = new Set<string>();
@@ -40,8 +62,11 @@ const RecordsPage: React.FC = () => {
     if (payFilter !== 'all') {
       result = result.filter(o => o.payType === payFilter);
     }
+    if (sourceFilter !== 'all') {
+      result = result.filter(o => o.source === sourceFilter);
+    }
     return result;
-  }, [rawOrders, stallFilter, payFilter]);
+  }, [rawOrders, stallFilter, payFilter, sourceFilter]);
 
   const filteredStats = useMemo(() => {
     const today = new Date();
@@ -62,6 +87,7 @@ const RecordsPage: React.FC = () => {
   }, [filteredOrders]);
 
   usePullDownRefresh(() => {
+    refreshSettlements(settlementMonth);
     setTimeout(() => {
       Taro.stopPullDownRefresh();
     }, 500);
@@ -71,7 +97,31 @@ const RecordsPage: React.FC = () => {
     Taro.navigateTo({ url: `/pages/order-detail/index?id=${order.id}` });
   };
 
-  const isFiltering = stallFilter !== 'all' || payFilter !== 'all';
+  const handleStallClick = (stall) => {
+    const monthOrders = getOrdersByMonth(settlementMonth)
+      .filter(o => o.stallId === stall.stallId)
+      .sort((a, b) => b.createdAt - a.createdAt);
+
+    const itemsText = monthOrders.length > 0
+      ? monthOrders.slice(0, 6).map(o =>
+          `${dayjs(o.createdAt).format('MM-DD HH:mm')} ${o.orderNumber} ¥${o.totalAmount.toFixed(2)}`
+        ).join('\n')
+      : '暂无订单';
+
+    const moreText = monthOrders.length > 6
+      ? `\n...还有 ${monthOrders.length - 6} 笔`
+      : '';
+
+    Taro.showModal({
+      title: `${stall.stallName} - ${settlementMonth} 订单明细`,
+      content: `共 ${stall.totalOrders} 单，总金额 ¥${stall.totalAmount.toFixed(2)}\n\n${itemsText}${moreText}`,
+      showCancel: false,
+      confirmText: '知道了',
+      confirmColor: '#FF6B35'
+    });
+  };
+
+  const isFiltering = stallFilter !== 'all' || payFilter !== 'all' || sourceFilter !== 'all';
 
   return (
     <View className={styles.pageContainer}>
@@ -93,7 +143,7 @@ const RecordsPage: React.FC = () => {
             {isFiltering && (
               <Text
                 className={styles.clearFilter}
-                onClick={() => { setStallFilter('all'); setPayFilter('all'); }}
+                onClick={() => { setStallFilter('all'); setPayFilter('all'); setSourceFilter('all'); }}
               >
                 清除筛选
               </Text>
@@ -192,11 +242,40 @@ const RecordsPage: React.FC = () => {
                   </View>
                 </View>
               </View>
+              <View className={styles.filterRow}>
+                <Text className={styles.filterLabel}>来源</Text>
+                <View className={styles.filterOptions}>
+                  <View
+                    className={classnames(styles.filterChip, sourceFilter === 'all' && styles.filterChipActive)}
+                    onClick={() => setSourceFilter('all')}
+                  >
+                    <Text>全部</Text>
+                  </View>
+                  <View
+                    className={classnames(styles.filterChip, sourceFilter === 'queue' && styles.filterChipActive)}
+                    onClick={() => setSourceFilter('queue')}
+                  >
+                    <Text>取餐生成</Text>
+                  </View>
+                  <View
+                    className={classnames(styles.filterChip, sourceFilter === 'direct' && styles.filterChipActive)}
+                    onClick={() => setSourceFilter('direct')}
+                  >
+                    <Text>直接消费</Text>
+                  </View>
+                  <View
+                    className={classnames(styles.filterChip, sourceFilter === 'imported' && styles.filterChipActive)}
+                    onClick={() => setSourceFilter('imported')}
+                  >
+                    <Text>历史导入</Text>
+                  </View>
+                </View>
+              </View>
             </View>
 
             <View className={styles.sectionTitleRow}>
               <Text className={styles.sectionTitle}>
-                {isFiltering ? '筛选结果' : '全部订单'}
+                {isFiltering ? `筛选结果 · ${sourceLabel[sourceFilter]}` : '全部订单'}
               </Text>
               <Text className={styles.countBadge}>{filteredOrders.length}</Text>
             </View>
@@ -220,17 +299,41 @@ const RecordsPage: React.FC = () => {
 
         {activeTab === 'settlement' && (
           <>
+            <View className={styles.monthTabs}>
+              <View
+                className={classnames(styles.monthTab, settlementMonth === currentMonth && styles.monthTabActive)}
+                onClick={() => setSettlementMonth(currentMonth)}
+              >
+                本月 ({currentMonth})
+              </View>
+              <View
+                className={classnames(styles.monthTab, settlementMonth === lastMonth && styles.monthTabActive)}
+                onClick={() => setSettlementMonth(lastMonth)}
+              >
+                上月 ({lastMonth})
+              </View>
+            </View>
+
             <View className={styles.sectionTitleRow}>
-              <Text className={styles.sectionTitle}>档口分账结算</Text>
+              <Text className={styles.sectionTitle}>
+                {settlementMonth === currentMonth ? '本月' : '上月'}档口分账
+              </Text>
               <Text className={styles.countBadge}>{settlements.length}</Text>
             </View>
 
             {settlements.length > 0 ? (
               settlements.map(item => (
-                <View key={item.id} className={styles.stallCard}>
+                <View
+                  key={item.id}
+                  className={classnames(styles.stallCard, styles.stallCardClickable)}
+                  onClick={() => handleStallClick(item)}
+                >
                   <View className={styles.stallHeader}>
                     <Text className={styles.stallName}>{item.stallName}</Text>
-                    <Text className={styles.stallPeriod}>{item.period}</Text>
+                    <View style={{ display: 'flex', alignItems: 'center', gap: '8rpx' }}>
+                      <Text className={styles.stallPeriod}>{item.period}</Text>
+                      <Text className={styles.stallArrow}>›</Text>
+                    </View>
                   </View>
                   <View className={styles.stallStats}>
                     <View className={styles.stallStatItem}>
@@ -261,7 +364,7 @@ const RecordsPage: React.FC = () => {
             ) : (
               <View className={styles.emptyState}>
                 <Text className={styles.emptyIcon}>🏪</Text>
-                <Text className={styles.emptyText}>暂无分账记录</Text>
+                <Text className={styles.emptyText}>该月暂无分账记录</Text>
               </View>
             )}
           </>

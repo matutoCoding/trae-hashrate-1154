@@ -85,6 +85,7 @@ export interface ConsumeOrder {
   id: string;
   orderNumber: string;
   queueOrderNumber?: string;
+  source: 'queue' | 'direct' | 'imported';
   stallId: string;
   stallName: string;
   items: {

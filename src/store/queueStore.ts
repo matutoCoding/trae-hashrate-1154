@@ -165,8 +165,12 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     const targetWeight = priorityWeight[orderData.priority];
 
     const sorted = get().getSortedOrders();
+
+    const firstWaitingIdx = sorted.findIndex(o => o.status === 'waiting');
+    const waitingStartIdx = firstWaitingIdx === -1 ? sorted.length : firstWaitingIdx;
+
     let insertIndex = sorted.length;
-    for (let i = 0; i < sorted.length; i++) {
+    for (let i = waitingStartIdx; i < sorted.length; i++) {
       const w = priorityWeight[sorted[i].priority];
       if (w > targetWeight) {
         insertIndex = i;

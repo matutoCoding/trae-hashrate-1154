@@ -8,11 +8,12 @@ interface OrderStore {
   settlements: StallSettlement[];
   getOrderById: (id: string) => ConsumeOrder | undefined;
   getOrdersByStall: (stallId: string) => ConsumeOrder[];
+  getOrdersByMonth: (month: string) => ConsumeOrder[];
   getTodayOrders: () => ConsumeOrder[];
   getMonthOrders: () => ConsumeOrder[];
-  addOrder: (order: Omit<ConsumeOrder, 'id' | 'orderNumber' | 'createdAt'>) => ConsumeOrder;
+  addOrder: (order: Omit<ConsumeOrder, 'id' | 'orderNumber' | 'createdAt' | 'source'> & { source?: ConsumeOrder['source'] }) => ConsumeOrder;
   refreshStats: () => void;
-  refreshSettlements: () => void;
+  refreshSettlements: (month?: string) => void;
 }
 
 const getCurrentPeriod = (): string => {
@@ -27,6 +28,13 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
   getOrderById: (id) => get().orders.find(o => o.id === id),
 
   getOrdersByStall: (stallId) => get().orders.filter(o => o.stallId === stallId),
+
+  getOrdersByMonth: (month) => {
+    const [y, m] = month.split('-').map(Number);
+    const start = new Date(y, m - 1, 1).getTime();
+    const end = new Date(y, m, 1).getTime();
+    return get().orders.filter(o => o.createdAt >= start && o.createdAt < end);
+  },
 
   getTodayOrders: () => {
     const today = new Date();
@@ -50,6 +58,7 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
     }, 0);
     const newOrder: ConsumeOrder = {
       ...orderData,
+      source: orderData.source || 'queue',
       id: `o${now}`,
       orderNumber: `O${dateStr}${String(maxSeq + 1).padStart(4, '0')}`,
       createdAt: now
@@ -77,9 +86,9 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
     set({ stats });
   },
 
-  refreshSettlements: () => {
-    const period = getCurrentPeriod();
-    const monthOrders = get().getMonthOrders();
+  refreshSettlements: (month) => {
+    const period = month || getCurrentPeriod();
+    const monthOrders = get().getOrdersByMonth(period);
     const stallMap = new Map<string, {
       stallId: string;
       stallName: string;

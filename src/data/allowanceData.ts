@@ -29,43 +29,57 @@ export const mockAllowanceRecords: AllowanceRecord[] = [
   {
     id: 'a003', userId: 'u001', userName: '张三',
     type: 'consume', amount: 28, balanceAfter: 772,
-    relatedOrderId: 'o001', description: '川香小厨 - 午餐',
+    relatedOrderId: 'q001', relatedConsumeOrderId: 'o001',
+    description: '川香小厨 - 午餐',
     timestamp: new Date('2026-06-03 12:15:00').getTime(),
     month: '2026-06'
   },
   {
     id: 'a004', userId: 'u001', userName: '张三',
     type: 'consume', amount: 35.5, balanceAfter: 736.5,
-    relatedOrderId: 'o002', description: '粤式茶餐厅 - 午餐（混合：餐补¥35.50 + 自费¥2.50）',
+    relatedOrderId: 'q004', relatedConsumeOrderId: 'o002',
+    description: '粤式茶餐厅 - 午餐（混合：餐补¥35.50 + 自费¥2.50）',
     timestamp: new Date('2026-06-05 12:30:00').getTime(),
     month: '2026-06'
   },
   {
     id: 'a005', userId: 'u001', userName: '张三',
     type: 'consume', amount: 42, balanceAfter: 694.5,
-    relatedOrderId: 'o003', description: '日式拉面屋 - 晚餐',
+    relatedConsumeOrderId: 'o003',
+    description: '日式拉面屋 - 晚餐',
     timestamp: new Date('2026-06-08 18:20:00').getTime(),
     month: '2026-06'
   },
   {
     id: 'a006', userId: 'u001', userName: '张三',
     type: 'consume', amount: 26, balanceAfter: 668.5,
-    relatedOrderId: 'o004', description: '西北牛肉面 - 午餐',
+    relatedOrderId: 'q005', relatedConsumeOrderId: 'o004',
+    description: '西北牛肉面 - 午餐',
     timestamp: new Date('2026-06-10 12:10:00').getTime(),
     month: '2026-06'
   },
   {
     id: 'a007', userId: 'u001', userName: '张三',
     type: 'consume', amount: 58, balanceAfter: 610.5,
-    relatedOrderId: 'o005', description: '麻辣香锅 - 晚餐',
+    relatedConsumeOrderId: 'o005',
+    description: '麻辣香锅 - 晚餐',
     timestamp: new Date('2026-06-12 18:45:00').getTime(),
     month: '2026-06'
   },
   {
     id: 'a008', userId: 'u001', userName: '张三',
     type: 'consume', amount: 42, balanceAfter: 568.5,
-    relatedOrderId: 'o006', description: '港式烧腊饭 - 午餐',
+    relatedOrderId: 'q007', relatedConsumeOrderId: 'o006',
+    description: '港式烧腊饭 - 午餐',
     timestamp: new Date('2026-06-15 12:25:00').getTime(),
+    month: '2026-06'
+  },
+  {
+    id: 'a017', userId: 'u001', userName: '张三',
+    type: 'consume', amount: 21, balanceAfter: 547.5,
+    relatedOrderId: 'q009', relatedConsumeOrderId: 'o014',
+    description: '川香小厨 - A009取餐消费',
+    timestamp: new Date('2026-06-19 11:50:00').getTime(),
     month: '2026-06'
   },
   {
@@ -85,41 +99,46 @@ export const mockAllowanceRecords: AllowanceRecord[] = [
   {
     id: 'a011', userId: 'u001', userName: '张三',
     type: 'consume', amount: 32, balanceAfter: 768,
-    relatedOrderId: 'o007', description: '韩式拌饭 - 午餐（自费）',
+    relatedConsumeOrderId: 'o013',
+    description: '韩式拌饭 - 午餐（自费）',
     timestamp: new Date('2026-05-06 12:05:00').getTime(),
     month: '2026-05'
   },
   {
     id: 'a012', userId: 'u001', userName: '张三',
     type: 'consume', amount: 40, balanceAfter: 728,
-    relatedOrderId: 'o008', description: '轻食沙拉吧 - 午餐',
+    relatedConsumeOrderId: 'o012',
+    description: '轻食沙拉吧 - 午餐',
     timestamp: new Date('2026-05-08 12:35:00').getTime(),
     month: '2026-05'
   },
   {
     id: 'a013', userId: 'u001', userName: '张三',
-    type: 'consume', amount: 45, balanceAfter: 683,
+    type: 'consume', amount: 46, balanceAfter: 682,
+    relatedOrderId: 'q043', relatedConsumeOrderId: 'o011',
     description: '川香小厨 - 晚餐',
     timestamp: new Date('2026-05-12 18:30:00').getTime(),
     month: '2026-05'
   },
   {
     id: 'a014', userId: 'u001', userName: '张三',
-    type: 'consume', amount: 28, balanceAfter: 655,
+    type: 'consume', amount: 35, balanceAfter: 647,
+    relatedOrderId: 'q051', relatedConsumeOrderId: 'o010',
     description: '粤式茶餐厅 - 午餐',
     timestamp: new Date('2026-05-15 12:20:00').getTime(),
     month: '2026-05'
   },
   {
     id: 'a015', userId: 'u001', userName: '张三',
-    type: 'grant', amount: 100, balanceAfter: 755,
+    type: 'grant', amount: 100, balanceAfter: 747,
     description: '加班餐补临时发放 ¥100',
     timestamp: new Date('2026-05-20 09:00:00').getTime(),
     month: '2026-05'
   },
   {
     id: 'a016', userId: 'u001', userName: '张三',
-    type: 'consume', amount: 58, balanceAfter: 697,
+    type: 'consume', amount: 58, balanceAfter: 689,
+    relatedConsumeOrderId: 'o009',
     description: '麻辣香锅 - 团建晚餐',
     timestamp: new Date('2026-05-22 19:10:00').getTime(),
     month: '2026-05'

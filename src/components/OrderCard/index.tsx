@@ -17,13 +17,25 @@ const payTagMap = {
   mixed: { label: '混合支付', className: 'mixedTag' }
 };
 
+const sourceTagMap = {
+  queue: { label: '取餐生成', className: 'sourceQueue' },
+  direct: { label: '直接消费', className: 'sourceDirect' },
+  imported: { label: '历史导入', className: 'sourceImported' }
+};
+
 const OrderCard: React.FC<OrderCardProps> = ({ order, onClick, showDetailLink = true }) => {
   const payTag = payTagMap[order.payType];
+  const sourceTag = sourceTagMap[order.source] || sourceTagMap.direct;
 
   return (
     <View className={styles.card} onClick={onClick}>
       <View className={styles.header}>
-        <Text className={styles.orderNumber}>{order.orderNumber}</Text>
+        <View style={{ display: 'flex', alignItems: 'center', gap: '12rpx' }}>
+          <Text className={styles.orderNumber}>{order.orderNumber}</Text>
+          <Text className={classnames(styles.sourceTag, styles[sourceTag.className])}>
+            {sourceTag.label}
+          </Text>
+        </View>
         <Text className={styles.time}>{dayjs(order.createdAt).format('MM-DD HH:mm')}</Text>
       </View>
 

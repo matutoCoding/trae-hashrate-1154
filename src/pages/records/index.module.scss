@@ -274,3 +274,43 @@
   color: $color-primary;
   font-weight: $font-weight-semibold;
 }
+
+.monthTabs {
+  display: flex;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 6rpx;
+  margin-bottom: $spacing-md;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.monthTab {
+  flex: 1;
+  text-align: center;
+  padding: $spacing-sm 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+}
+
+.monthTabActive {
+  background: $color-primary;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+  box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.25);
+}
+
+.stallCardClickable {
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+}
+
+.stallArrow {
+  font-size: $font-size-xl;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-light;
+}
