@@ -152,6 +152,14 @@ const AllowancePage: React.FC = () => {
 
   const cardClass = isCurrentMonth ? styles.allowanceCard : styles.historyCard;
 
+  const handleRecordClick = (record) => {
+    if (record.type === 'consume' && record.relatedConsumeOrderId) {
+      Taro.navigateTo({ url: `/pages/order-detail/index?id=${record.relatedConsumeOrderId}` });
+    } else if (record.type === 'consume') {
+      Taro.showToast({ title: '暂无关联订单详情', icon: 'none' });
+    }
+  };
+
   return (
     <View className={styles.pageContainer}>
       <View className={styles.monthTabs}>
@@ -261,8 +269,13 @@ const AllowancePage: React.FC = () => {
         {monthRecords.length > 0 ? (
           monthRecords.map(record => {
             const tag = getTypeTag(record.type);
+            const isConsume = record.type === 'consume';
             return (
-              <View key={record.id} className={styles.recordItem}>
+              <View
+                key={record.id}
+                className={classnames(styles.recordItem, isConsume && styles.recordClickable)}
+                onClick={() => isConsume && handleRecordClick(record)}
+              >
                 <View className={styles.recordLeft}>
                   <View className={styles.recordType}>
                     <Text className={classnames(styles.typeTag, styles[tag.className])}>
@@ -282,6 +295,9 @@ const AllowancePage: React.FC = () => {
                     {record.type === 'consume' ? '-' : '+'}¥{record.amount.toFixed(2)}
                   </Text>
                   <Text className={styles.recordBalance}>余额 ¥{record.balanceAfter.toFixed(2)}</Text>
+                  {isConsume && record.relatedConsumeOrderId && (
+                    <Text className={styles.recordLink}>详情 ›</Text>
+                  )}
                 </View>
               </View>
             );

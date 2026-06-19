@@ -62,6 +62,7 @@ export interface AllowanceRecord {
   amount: number;
   balanceAfter: number;
   relatedOrderId?: string;
+  relatedConsumeOrderId?: string;
   description: string;
   timestamp: number;
   month: string;
@@ -83,6 +84,7 @@ export interface UserAllowance {
 export interface ConsumeOrder {
   id: string;
   orderNumber: string;
+  queueOrderNumber?: string;
   stallId: string;
   stallName: string;
   items: {

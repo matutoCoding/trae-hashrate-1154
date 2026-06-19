@@ -189,7 +189,9 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
 
     const allAffected = sorted.slice(insertIndex);
     const affectedOrders = allAffected.map(o => o.orderNumber);
-    const normalAffectedOrders = allAffected.filter(o => o.priority === 'normal').map(o => o.orderNumber);
+    const normalAffectedOrders = allAffected
+      .filter(o => o.priority === 'normal' && o.status === 'waiting')
+      .map(o => o.orderNumber);
     const originalPositionUser = sorted.length + 1;
     const newPositionUser = insertIndex + 1;
 
@@ -270,7 +272,8 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       `${order.stallName} - ${order.orderNumber} 取餐消费`
     );
 
-    const newOrder: ConsumeOrder = {
+    const consumeOrderData: Omit<ConsumeOrder, 'id' | 'orderNumber' | 'createdAt'> = {
+      queueOrderNumber: order.orderNumber,
       stallId: order.stallId,
       stallName: order.stallName,
       items: itemPrices,
@@ -282,7 +285,23 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       userName: order.customerName,
       status: 'completed'
     };
-    const consumeOrder = useOrderStore.getState().addOrder(newOrder);
+    const consumeOrder = useOrderStore.getState().addOrder(consumeOrderData);
+
+    const allowanceRecords = useAllowanceStore.getState().records;
+    const latestConsumeRecord = allowanceRecords.find(
+      r => r.type === 'consume' && r.relatedOrderId === order.id
+    );
+    if (latestConsumeRecord && !latestConsumeRecord.relatedConsumeOrderId) {
+      useAllowanceStore.setState(state => ({
+        records: state.records.map(r =>
+          r.id === latestConsumeRecord.id
+            ? { ...r, relatedConsumeOrderId: consumeOrder.id }
+            : r
+        )
+      }));
+    }
+
+    useOrderStore.getState().refreshSettlements();
 
     set(state => ({
       orders: state.orders.map(o => o.id === orderId ? {

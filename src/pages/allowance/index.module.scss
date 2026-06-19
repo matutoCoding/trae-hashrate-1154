@@ -276,6 +276,13 @@
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
+.recordClickable {
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+}
+
 .recordLeft {
   flex: 1;
   min-width: 0;
@@ -346,6 +353,12 @@
   font-size: $font-size-xs;
   color: $color-text-tertiary;
   margin-top: 4rpx;
+}
+
+.recordLink {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  margin-top: 6rpx;
 }
 
 .emptyState {

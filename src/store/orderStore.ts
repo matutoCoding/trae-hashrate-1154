@@ -12,7 +12,12 @@ interface OrderStore {
   getMonthOrders: () => ConsumeOrder[];
   addOrder: (order: Omit<ConsumeOrder, 'id' | 'orderNumber' | 'createdAt'>) => ConsumeOrder;
   refreshStats: () => void;
+  refreshSettlements: () => void;
 }
+
+const getCurrentPeriod = (): string => {
+  return new Date().toISOString().slice(0, 7);
+};
 
 export const useOrderStore = create<OrderStore>((set, get) => ({
   orders: [...mockConsumeOrders],
@@ -51,12 +56,13 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
     };
     set(state => ({ orders: [newOrder, ...state.orders] }));
     get().refreshStats();
-    console.log('[OrderStore] addOrder:', newOrder.orderNumber);
+    get().refreshSettlements();
+    console.log('[OrderStore] addOrder:', newOrder.orderNumber,
+      orderData.queueOrderNumber ? `(来源: 排队号${orderData.queueOrderNumber})` : '');
     return newOrder;
   },
 
   refreshStats: () => {
-    const orders = get().orders;
     const todayOrders = get().getTodayOrders();
     const monthOrders = get().getMonthOrders();
 
@@ -69,5 +75,53 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
       selfpayTotal: monthOrders.reduce((s, o) => s + o.selfpayAmount, 0)
     };
     set({ stats });
+  },
+
+  refreshSettlements: () => {
+    const period = getCurrentPeriod();
+    const monthOrders = get().getMonthOrders();
+    const stallMap = new Map<string, {
+      stallId: string;
+      stallName: string;
+      totalOrders: number;
+      totalAmount: number;
+      subsidyAmount: number;
+      selfpayAmount: number;
+    }>();
+
+    for (const order of monthOrders) {
+      const existing = stallMap.get(order.stallId);
+      if (existing) {
+        existing.totalOrders += 1;
+        existing.totalAmount += order.totalAmount;
+        existing.subsidyAmount += order.subsidyAmount;
+        existing.selfpayAmount += order.selfpayAmount;
+      } else {
+        stallMap.set(order.stallId, {
+          stallId: order.stallId,
+          stallName: order.stallName,
+          totalOrders: 1,
+          totalAmount: order.totalAmount,
+          subsidyAmount: order.subsidyAmount,
+          selfpayAmount: order.selfpayAmount
+        });
+      }
+    }
+
+    const settlements: StallSettlement[] = Array.from(stallMap.values()).map((data, idx) => ({
+      id: `st_${data.stallId}_${period}`,
+      stallId: data.stallId,
+      stallName: data.stallName,
+      period,
+      totalOrders: data.totalOrders,
+      totalAmount: Math.round(data.totalAmount * 100) / 100,
+      subsidyAmount: Math.round(data.subsidyAmount * 100) / 100,
+      selfpayAmount: Math.round(data.selfpayAmount * 100) / 100,
+      settledAmount: Math.round(data.totalAmount * 100) / 100,
+      settlementDate: Date.now()
+    }));
+
+    set({ settlements });
+    console.log('[OrderStore] refreshSettlements:', settlements.length, '个档口已更新');
   }
 }));
